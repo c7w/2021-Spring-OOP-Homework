@@ -1,0 +1,1 @@
+static int v = 2;

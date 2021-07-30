@@ -1,0 +1,19 @@
+BCD
+BD
+ABCD
+D
+ABCD
+ABCD*
+ACD
+BCD
+
+
+1 4 6
+BC
+BD
+ABCD
+D
+ABCD
+A
+ACD
+BCD

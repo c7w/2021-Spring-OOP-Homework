@@ -1,0 +1,118 @@
+T(1)
+    1 |  Test F(Test a){
+    2 |      Test b = std::move(a);
+    3 |      return b;
+    4 |  }
+    5 |  int main(){
+    6 |      Test a;
+    7 |      a = 1;
+    8 |      Test A = F(a);
+    9 |      return 0;
+   10 |  }
+
+    调用次数：
+        + (构造函数, 复制构造函数, 移动构造函数, 赋值运算, 移动赋值运算) = (2, 1, 3, 0, 1).
+    调用位置:
+        + Line 6, Test()
+        + Line 7, Test(int)
+        + Line 8 |-> Line 1, Test(const Test&)
+        + Line 2, Test(Test&&)
+        + Line 3, Test(Test&&)
+        + Line 8, Test(Test&&)
+    输出结果：
+        [1+] Test(): this->buf @ 0x7fffd5faceb0
+        [2+] Test(int): this->buf @ 0x7fffd5fadee0
+        [XX] operator=(Test&& right) called. this->buf @ 0x7fffd5faceb0. right->buf @ 0x7fffd5fadee0
+        [2-] ~Test(): this->buf @ 0
+        [3+] Test(const Test&) called. this->buf @ 0x7fffd5faceb0
+        [4+] Test(Test&&) called. this->buf @ 0x7fffd5faceb0
+        [5+] Test(Test&&) called. this->buf @ 0x7fffd5faceb0
+        [4-] ~Test(): this->buf @ 0
+        [6+] Test(Test&&) called. this->buf @ 0x7fffd5faceb0
+        [5-] ~Test(): this->buf @ 0
+        [3-] ~Test(): this->buf @ 0
+        [6-] ~Test(): this->buf @ 0x7fffd5faceb0
+        [1-] ~Test(): this->buf @ 0x7fffd5fadee0
+        
+        
+T(2)
+    1 |  Test F(const Test& a){
+    2 |     Test b = std::move(a);
+    3 |     return b;
+    4 |  }
+    5 |  int main(){
+    6 |      Test A = F(1);
+    7 |      return 0;
+    8 |  }
+
+    调用次数：
+        + (构造函数, 复制构造函数, 移动构造函数, 赋值运算, 移动赋值运算) = (1, 1, 2, 0, 0).
+    调用位置:
+        + Line 6, Test(int)
+        + Line 6 |-> Line 1, Test(const Test&)
+        + Line 2, Test(Test&&)
+        + Line 6, Test(Test&&)
+    输出结果：
+        [1+] Test(int): this->buf @ 0x7fffcceaceb0
+        [2+] Test(const Test&) called. this->buf @ 0x7fffcceadee0
+        [3+] Test(Test&&) called. this->buf @ 0x7fffcceadee0
+        [2-] ~Test(): this->buf @ 0
+        [4+] Test(Test&&) called. this->buf @ 0x7fffcceadee0
+        [3-] ~Test(): this->buf @ 0
+        [1-] ~Test(): this->buf @ 0x7fffcceaceb0
+        [4-] ~Test(): this->buf @ 0x7fffcceadee0
+
+
+T(3)
+    1 |  Test F(Test &&a){
+    2 |      Test b = std::move(a);
+    3 |      return b;
+    4 |  }
+    5 |  int main(){
+    6 |      Test A = F(1);
+    7 |      return 0;
+    8 |  }
+    
+    调用次数：
+        + (构造函数, 复制构造函数, 移动构造函数, 赋值运算, 移动赋值运算) = (1, 0, 3, 0, 0).
+    调用位置:
+        + Line 6, Test(int)
+        + Line 2, Test(Test&& t)
+        + Line 3, Test(Test&& t)
+        + Line 6, Test(Test&& t)
+    输出结果：
+        [1+] Test(int): this->buf @ 0x7fffeea52eb0
+        [2+] Test(Test&&) called. this->buf @ 0x7fffeea52eb0
+        [3+] Test(Test&&) called. this->buf @ 0x7fffeea52eb0
+        [2-] ~Test(): this->buf @ 0
+        [4+] Test(Test&&) called. this->buf @ 0x7fffeea52eb0
+        [3-] ~Test(): this->buf @ 0
+        [1-] ~Test(): this->buf @ 0
+        [4-] ~Test(): this->buf @ 0x7fffeea52eb0
+
+
+T(4)
+    1 |  Test&& F(Test &a){
+    2 |      Test b = a;
+    3 |      return std::move(b);
+    4 |  }
+    5 |  int main(){
+    6 |      Test A = F(Test(1));
+    7 |      return 0;
+    8 |  }
+
+    存在编译错误： Line 6: Test(1) 返回右值，而实际参数必须传入左值
+
+
+T(5)
+    1 |  const Test& F(const Test& a){
+    2 |      Test b = a;
+    3 |      return Test(1);
+    4 |  }
+    5 |  int main() {
+    6 |      Test a;
+    7 |      const Test &A = F(std::move(a));
+    8 |      return 0;
+    9 |  }
+    
+    存在风险： Line 3 : return Test(1); 返回临时变量的引用

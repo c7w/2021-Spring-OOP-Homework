@@ -1,0 +1,29 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "C/C++: g++.exe build active file",
+			"command": "F:\\Mingw\\mingw64\\bin\\g++.exe",
+			"args": [
+				"-g",
+				"main.cpp",
+				"-o",
+				"main",
+				"-std=c++11",
+				"-fno-elide-constructors"
+			],
+			"options": {
+				"cwd": "${fileDirname}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "compiler: F:\\Mingw\\mingw64\\bin\\g++.exe"
+		}
+	]
+}
